@@ -105,6 +105,19 @@ fi
 
 cd /app || exit
 
+# Set up log file if LOG_DIR is specified
+LOG_FILE=""
+if [ -n "$LOG_DIR" ]; then
+    mkdir -p "$LOG_DIR"
+    LOG_FILE="$LOG_DIR/node-hp-scan-to.log"
+    echo "Logging to $LOG_FILE"
+fi
+
 echo "Starting"
-s6-setuidgid node \
-    node index.js "${ARGS[@]}"
+if [ -n "$LOG_FILE" ]; then
+    s6-setuidgid node \
+        stdbuf -oL node index.js "${ARGS[@]}" 2>&1 | tee -a "$LOG_FILE"
+else
+    s6-setuidgid node \
+        node index.js "${ARGS[@]}"
+fi
