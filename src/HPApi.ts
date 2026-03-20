@@ -47,17 +47,6 @@ export default class HPApi {
   static setAllowInsecureHttps(v: boolean): void { allowInsecureHttps = v; }
   static setUseHttps(v: boolean): void { useHttps = v; }
 
-  private static extraConfig(): Partial<AxiosRequestConfig> {
-    return allowInsecureHttps
-      ? { httpsAgent: new https.Agent({ rejectUnauthorized: false }) }
-      : {};
-  }
-
-  private static printerBaseUrl(port?: number): string {
-    const scheme = useHttps ? "https" : "http";
-    return port ? `${scheme}://${printerIP}:${port}` : `${scheme}://${printerIP}`;
-  }
-
   private static scheme(): string {
     return useHttps ? "https" : "http";
   }
@@ -67,7 +56,7 @@ export default class HPApi {
       ? new https.Agent({ rejectUnauthorized: false })
       : undefined;
   }
-  
+
   static setDeviceIP(ip: string): void {
     printerIP = ip;
   }
@@ -161,21 +150,24 @@ export default class HPApi {
   }
 
   static async getDiscoveryTree(): Promise<DiscoveryTree | null> {
-    const response = await HPApi.callAxios({
-      baseURL: `${HPApi.scheme()}://${printerIP}`,
-      ...(HPApi.httpsAgent() && { httpsAgent: HPApi.httpsAgent() }),
-      url: "/DevMgmt/DiscoveryTree.xml",
-      method: "GET",
-      responseType: "text",
-    });
+    let response: AxiosResponse<string>;
+    try {
+      response = await HPApi.callAxios({
+        baseURL: `${HPApi.scheme()}://${printerIP}`,
+        ...(HPApi.httpsAgent() && { httpsAgent: HPApi.httpsAgent() }),
+        url: "/DevMgmt/DiscoveryTree.xml",
+        method: "GET",
+        responseType: "text",
+        validateStatus: (status) => status === 200 || status === 404,
+      });
+    } catch (error) {
+      throw error;
+    }
 
     if (response.status === 404) {
-      return null;  // eSCL-only printer, no legacy tree
-    } else if (response.status !== 200) {
-      throw new Error(response.statusText);
-    } else {
-      return DiscoveryTree.createDiscoveryTree(response.data);
+      return null;
     }
+    return DiscoveryTree.createDiscoveryTree(response.data);
   }
 
   static async getWalkupScanDestinations(
