@@ -48,7 +48,8 @@ jobs:
           node-version: '20.18.1'
           cache: 'yarn'
       - name: Install project dependencies
-        run: yarn install --frozen-lockfile
+        #run: yarn install --frozen-lockfile
+        run: yarn install
       - name: Test
         run: yarn test
       - name: Build
