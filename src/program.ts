@@ -493,6 +493,9 @@ function createListenCliCmd(configFile: FileConfig) {
 
       const isDebug = getIsDebug(options, configFile);
       HPApi.setDebug(isDebug);
+      
+      HPApi.setAllowInsecureHttps(options.allowInsecureHttps ?? false);
+      HPApi.setUseHttps(options.useHttps ?? false);
 
       const registrationConfigs: RegistrationConfig[] = [];
 
@@ -592,6 +595,9 @@ function createAdfAutoscanCliCmd(fileConfig: FileConfig) {
 
       const isDebug = getIsDebug(options, fileConfig);
       HPApi.setDebug(isDebug);
+      
+      HPApi.setAllowInsecureHttps(options.allowInsecureHttps ?? false);
+      HPApi.setUseHttps(options.useHttps ?? false);
 
       const deviceUpPollingInterval = getDeviceUpPollingInterval(
         options,
@@ -667,6 +673,9 @@ function createSingleScanCliCmd(fileConfig: FileConfig) {
 
       const isDebug = getIsDebug(options, fileConfig);
       HPApi.setDebug(isDebug);
+      
+      HPApi.setAllowInsecureHttps(options.allowInsecureHttps ?? false);
+      HPApi.setUseHttps(options.useHttps ?? false);
 
       let healthCheckSrv: NetServer | null = null;
       const healthCheckSetting = getHealthCheckSetting(options, fileConfig);
@@ -714,6 +723,9 @@ function createClearRegistrationsCliCmd(fileConfig: FileConfig) {
 
       const isDebug = getIsDebug(options, fileConfig);
       HPApi.setDebug(isDebug);
+      
+      HPApi.setAllowInsecureHttps(options.allowInsecureHttps ?? false);
+      HPApi.setUseHttps(options.useHttps ?? false);
 
       let healthCheckSrv: NetServer | null = null;
       const healthCheckSetting = getHealthCheckSetting(options, fileConfig);
@@ -740,6 +752,8 @@ function createProgram() {
       "Name of the device to lookup for on the network", // i.e. 'Deskjet 3520 series'
     )
     .option("-D, --debug", "Enable debug")
+    .option("--allow-insecure-https", "Trust self-signed HTTPS certificates")
+    .option("--use-https", "Connect to printer over HTTPS (for printers that redirect HTTP→HTTPS)")
     .addOption(
       new Option(
         "--health-check",

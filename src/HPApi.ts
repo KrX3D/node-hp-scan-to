@@ -33,10 +33,34 @@ import EsclScanStatus from "./hpModels/EsclScanStatus.js";
 import type { IScanJobSettings } from "./hpModels/IScanJobSettings.js";
 import EsclScanImageInfo from "./hpModels/EsclScanImageInfo.js";
 import PathHelper from "./PathHelper.js";
+import https from "https";
 
 let printerIP = "192.168.1.11";
 let debug = false;
 let callCount = 0;
+
+// module-level, alongside printerIP / debug
+let allowInsecureHttps = false;
+let useHttps = false;
+
+// add these static methods alongside the existing setters
+static setAllowInsecureHttps(allow: boolean): void {
+  allowInsecureHttps = allow;
+}
+
+static setUseHttps(https: boolean): void {
+  useHttps = https;
+}
+
+private static scheme(): string {
+  return useHttps ? "https" : "http";
+}
+
+private static httpsAgent(): https.Agent | undefined {
+  return allowInsecureHttps
+    ? new https.Agent({ rejectUnauthorized: false })
+    : undefined;
+}
 
 export default class HPApi {
   static setDeviceIP(ip: string): void {
@@ -133,7 +157,8 @@ export default class HPApi {
 
   static async getDiscoveryTree(): Promise<DiscoveryTree> {
     const response = await HPApi.callAxios({
-      baseURL: `http://${printerIP}`,
+      baseURL: `${HPApi.scheme()}://${printerIP}`,
+      ...(HPApi.httpsAgent() && { httpsAgent: HPApi.httpsAgent() }),
       url: "/DevMgmt/DiscoveryTree.xml",
       method: "GET",
       responseType: "text",
@@ -150,7 +175,8 @@ export default class HPApi {
     uri = "/WalkupScan/WalkupScanDestinations",
   ): Promise<WalkupScanDestinations> {
     const response = await HPApi.callAxios({
-      baseURL: `http://${printerIP}`,
+      baseURL: `${HPApi.scheme()}://${printerIP}`,
+      ...(HPApi.httpsAgent() && { httpsAgent: HPApi.httpsAgent() }),
       url: uri,
       method: "GET",
       responseType: "text",
@@ -165,7 +191,8 @@ export default class HPApi {
 
   static async getWalkupScanToCompDestinations(): Promise<WalkupScanToCompDestinations> {
     const response = await HPApi.callAxios({
-      baseURL: `http://${printerIP}`,
+      baseURL: `${HPApi.scheme()}://${printerIP}`,
+      ...(HPApi.httpsAgent() && { httpsAgent: HPApi.httpsAgent() }),
       url: "/WalkupScanToComp/WalkupScanToCompDestinations",
       method: "GET",
       responseType: "text",
@@ -182,7 +209,8 @@ export default class HPApi {
 
   static async getWalkupScanManifest(uri: string): Promise<WalkupScanManifest> {
     const response = await HPApi.callAxios({
-      baseURL: `http://${printerIP}`,
+      baseURL: `${HPApi.scheme()}://${printerIP}`,
+      ...(HPApi.httpsAgent() && { httpsAgent: HPApi.httpsAgent() }),
       url: uri,
       method: "GET",
       responseType: "text",
@@ -198,7 +226,8 @@ export default class HPApi {
     uri: string,
   ): Promise<WalkupScanToCompManifest> {
     const response = await HPApi.callAxios({
-      baseURL: `http://${printerIP}`,
+      baseURL: `${HPApi.scheme()}://${printerIP}`,
+      ...(HPApi.httpsAgent() && { httpsAgent: HPApi.httpsAgent() }),
       url: uri,
       method: "GET",
       responseType: "text",
@@ -215,7 +244,8 @@ export default class HPApi {
 
   static async getScanJobManifest(uri: string): Promise<ScanJobManifest> {
     const response = await HPApi.callAxios({
-      baseURL: `http://${printerIP}`,
+      baseURL: `${HPApi.scheme()}://${printerIP}`,
+      ...(HPApi.httpsAgent() && { httpsAgent: HPApi.httpsAgent() }),
       url: uri,
       method: "GET",
       responseType: "text",
@@ -232,7 +262,8 @@ export default class HPApi {
     uri: string,
   ): Promise<EsclScanJobManifest> {
     const response = await HPApi.callAxios({
-      baseURL: `http://${printerIP}`,
+      baseURL: `${HPApi.scheme()}://${printerIP}`,
+      ...(HPApi.httpsAgent() && { httpsAgent: HPApi.httpsAgent() }),
       url: uri,
       method: "GET",
       responseType: "text",
@@ -247,7 +278,8 @@ export default class HPApi {
 
   static async getScanCaps(uri: string): Promise<ScanCaps> {
     const response = await HPApi.callAxios({
-      baseURL: `http://${printerIP}`,
+      baseURL: `${HPApi.scheme()}://${printerIP}`,
+      ...(HPApi.httpsAgent() && { httpsAgent: HPApi.httpsAgent() }),
       url: uri,
       method: "GET",
       responseType: "text",
@@ -262,7 +294,8 @@ export default class HPApi {
 
   static async getEsclScanCaps(uri: string): Promise<EsclScanCaps> {
     const response = await HPApi.callAxios({
-      baseURL: `http://${printerIP}`,
+      baseURL: `${HPApi.scheme()}://${printerIP}`,
+      ...(HPApi.httpsAgent() && { httpsAgent: HPApi.httpsAgent() }),
       url: uri,
       method: "GET",
       responseType: "text",
@@ -279,7 +312,8 @@ export default class HPApi {
     uri: string,
   ): Promise<WalkupScanToCompCaps> {
     const response = await HPApi.callAxios({
-      baseURL: `http://${printerIP}`,
+      baseURL: `${HPApi.scheme()}://${printerIP}`,
+      ...(HPApi.httpsAgent() && { httpsAgent: HPApi.httpsAgent() }),
       url: uri,
       method: "GET",
       responseType: "text",
@@ -296,7 +330,8 @@ export default class HPApi {
     compEventURI: string,
   ): Promise<WalkupScanToCompEvent> {
     const response = await HPApi.callAxios({
-      baseURL: `http://${printerIP}`,
+      baseURL: `${HPApi.scheme()}://${printerIP}`,
+      ...(HPApi.httpsAgent() && { httpsAgent: HPApi.httpsAgent() }),
       url: compEventURI,
       method: "GET",
       responseType: "text",
@@ -319,7 +354,8 @@ export default class HPApi {
     );
 
     const response = await HPApi.callAxios({
-      baseURL: `http://${printerIP}`,
+      baseURL: `${HPApi.scheme()}://${printerIP}`,
+      ...(HPApi.httpsAgent() && { httpsAgent: HPApi.httpsAgent() }),
       url: path,
       method: "DELETE",
       responseType: "text",
@@ -339,7 +375,8 @@ export default class HPApi {
     const xml = await destination.toXML();
     const url = "/WalkupScan/WalkupScanDestinations";
     const response = await HPApi.callAxios({
-      baseURL: `http://${printerIP}`,
+      baseURL: `${HPApi.scheme()}://${printerIP}`,
+      ...(HPApi.httpsAgent() && { httpsAgent: HPApi.httpsAgent() }),
       url: url,
       method: "POST",
       headers: { "Content-Type": "text/xml" },
@@ -364,7 +401,8 @@ export default class HPApi {
     const xml = await destination.toXML();
     const url = "/WalkupScanToComp/WalkupScanToCompDestinations";
     const response = await HPApi.callAxios({
-      baseURL: `http://${printerIP}`,
+      baseURL: `${HPApi.scheme()}://${printerIP}`,
+      ...(HPApi.httpsAgent() && { httpsAgent: HPApi.httpsAgent() }),
       url: url,
       method: "POST",
       headers: { "Content-Type": "text/xml" },
@@ -395,7 +433,8 @@ export default class HPApi {
     let response: AxiosResponse<string>;
     try {
       response = await HPApi.callAxios({
-        baseURL: `http://${printerIP}`,
+        baseURL: `${HPApi.scheme()}://${printerIP}`,
+        ...(HPApi.httpsAgent() && { httpsAgent: HPApi.httpsAgent() }),
         url: url,
         method: "GET",
         responseType: "text",
@@ -449,7 +488,8 @@ export default class HPApi {
     destinationURL: string,
   ): Promise<WalkupScanDestination | WalkupScanToCompDestination> {
     const response = await HPApi.callAxios({
-      baseURL: `http://${printerIP}`,
+      baseURL: `${HPApi.scheme()}://${printerIP}`,
+      ...(HPApi.httpsAgent() && { httpsAgent: HPApi.httpsAgent() }),
       url: destinationURL,
       method: "GET",
       responseType: "text",
@@ -473,7 +513,8 @@ export default class HPApi {
 
   static async getScanStatus(): Promise<ScanStatus> {
     const response = await HPApi.callAxios({
-      baseURL: `http://${printerIP}`,
+      baseURL: `${HPApi.scheme()}://${printerIP}`,
+      ...(HPApi.httpsAgent() && { httpsAgent: HPApi.httpsAgent() }),
       url: "/Scan/Status",
       method: "GET",
       responseType: "text",
@@ -491,7 +532,8 @@ export default class HPApi {
 
   static async getEsclScanStatus(): Promise<EsclScanStatus> {
     const response = await HPApi.callAxios({
-      baseURL: `http://${printerIP}`,
+      baseURL: `${HPApi.scheme()}://${printerIP}`,
+      ...(HPApi.httpsAgent() && { httpsAgent: HPApi.httpsAgent() }),
       url: "/eSCL/ScannerStatus",
       method: "GET",
       responseType: "text",
@@ -517,7 +559,8 @@ export default class HPApi {
     await HPApi.delay(500);
     const xml = await job.toXML();
     const response = await HPApi.callAxios({
-      baseURL: `http://${printerIP}:8080`,
+      baseURL: `${HPApi.scheme()}://${printerIP}`,
+      ...(HPApi.httpsAgent() && { httpsAgent: HPApi.httpsAgent() }),
       url: "/Scan/Jobs",
       method: "POST",
       headers: { "Content-Type": "text/xml" },
@@ -541,7 +584,8 @@ export default class HPApi {
     await HPApi.delay(500);
     const xml = await job.toXML();
     const response = await HPApi.callAxios({
-      baseURL: `http://${printerIP}`,
+      baseURL: `${HPApi.scheme()}://${printerIP}`,
+      ...(HPApi.httpsAgent() && { httpsAgent: HPApi.httpsAgent() }),
       url: "/eSCL/ScanJobs",
       method: "POST",
       headers: { "Content-Type": "text/xml" },
@@ -587,7 +631,8 @@ export default class HPApi {
     timeout?: number,
   ): Promise<string> {
     const { data }: AxiosResponse<Stream> = await axios.request<Stream>({
-      baseURL: `http://${printerIP}:8080`,
+      baseURL: `${HPApi.scheme()}://${printerIP}`,
+      ...(HPApi.httpsAgent() && { httpsAgent: HPApi.httpsAgent() }),
       url: binaryURL,
       method: "GET",
       responseType: "stream",
@@ -635,7 +680,8 @@ export default class HPApi {
   ): Promise<EsclScanImageInfo> {
     return await HPApi.esclWaitDeviceBusy(async () => {
       const response = await HPApi.callAxios({
-        baseURL: `http://${printerIP}`,
+        baseURL: `${HPApi.scheme()}://${printerIP}`,
+        ...(HPApi.httpsAgent() && { httpsAgent: HPApi.httpsAgent() }),
         url: jobUri + "/ScanImageInfo",
         method: "GET",
         responseType: "text",

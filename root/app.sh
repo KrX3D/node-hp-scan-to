@@ -95,6 +95,14 @@ if [ -n "$CMDLINE" ]; then
     ARGS+=("$@")
 fi
 
+if [ -n "$ALLOW_INSECURE_HTTPS" ]; then
+    ARGS+=("--allow-insecure-https")
+fi
+
+if [ -n "$USE_HTTPS" ]; then
+    ARGS+=("--use-https")
+fi
+
 cd /app || exit
 
 echo "Starting"
