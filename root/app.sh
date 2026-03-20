@@ -116,7 +116,7 @@ fi
 echo "Starting"
 if [ -n "$LOG_FILE" ]; then
     s6-setuidgid node \
-        stdbuf -oL node index.js "${ARGS[@]}" 2>&1 | tee -a "$LOG_FILE"
+        node index.js "${ARGS[@]}" 2>&1 | tee -a "$LOG_FILE"
 else
     s6-setuidgid node \
         node index.js "${ARGS[@]}"
