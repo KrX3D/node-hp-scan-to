@@ -43,38 +43,31 @@ let callCount = 0;
 let allowInsecureHttps = false;
 let useHttps = false;
 
-static setAllowInsecureHttps(v: boolean): void { allowInsecureHttps = v; }
-
-static setUseHttps(v: boolean): void { useHttps = v; }
-
-private static axiosBaseConfig(): Partial<AxiosRequestConfig> {
-  return allowInsecureHttps
-    ? { httpsAgent: new (await import("node:https")).Agent({ rejectUnauthorized: false }) }
-    : {};
-}
-
-private static extraConfig(): Partial<AxiosRequestConfig> {
-  return allowInsecureHttps
-    ? { httpsAgent: new https.Agent({ rejectUnauthorized: false }) }
-    : {};
-}
-
-private static printerBaseUrl(port?: number): string {
-  const scheme = useHttps ? "https" : "http";
-  return port ? `${scheme}://${printerIP}:${port}` : `${scheme}://${printerIP}`;
-}
-
-private static scheme(): string {
-  return useHttps ? "https" : "http";
-}
-
-private static httpsAgent(): https.Agent | undefined {
-  return allowInsecureHttps
-    ? new https.Agent({ rejectUnauthorized: false })
-    : undefined;
-}
-
 export default class HPApi {
+  static setAllowInsecureHttps(v: boolean): void { allowInsecureHttps = v; }
+  static setUseHttps(v: boolean): void { useHttps = v; }
+
+  private static extraConfig(): Partial<AxiosRequestConfig> {
+    return allowInsecureHttps
+      ? { httpsAgent: new https.Agent({ rejectUnauthorized: false }) }
+      : {};
+  }
+
+  private static printerBaseUrl(port?: number): string {
+    const scheme = useHttps ? "https" : "http";
+    return port ? `${scheme}://${printerIP}:${port}` : `${scheme}://${printerIP}`;
+  }
+
+  private static scheme(): string {
+    return useHttps ? "https" : "http";
+  }
+
+  private static httpsAgent(): https.Agent | undefined {
+    return allowInsecureHttps
+      ? new https.Agent({ rejectUnauthorized: false })
+      : undefined;
+  }
+  
   static setDeviceIP(ip: string): void {
     printerIP = ip;
   }
