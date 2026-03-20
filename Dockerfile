@@ -5,7 +5,8 @@ COPY . .
 COPY src/commitInfo.json /app/src/commitInfo.json
 
 RUN corepack enable \
-    && yarn install --frozen-lockfile \
+    #&& yarn install --frozen-lockfile \
+    && yarn install --no-immutable \
     && yarn build \
     && rm dist/*.d.ts dist/*.js.map
 
