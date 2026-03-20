@@ -52,6 +52,14 @@ export async function readDeviceCapabilities(
 
   const discoveryTree = await HPApi.getDiscoveryTree();
 
+  // eSCL-only printer: no discovery tree, skip directly to eSCL
+  if (discoveryTree === null) {
+    console.log(
+      "No DiscoveryTree found — assuming eSCL-only device, probing /eSCL directly",
+    );
+    return await buildEsclOnlyCapabilities();
+  }
+
   if (discoveryTree.WalkupScanToCompManifestURI !== null) {
     useWalkupScanToComp = true;
     const walkupScanToCompManifest = await HPApi.getWalkupScanToCompManifest(
@@ -148,6 +156,62 @@ export async function readDeviceCapabilities(
     hasAdfDuplex: scanCaps?.hasAdfDuplex ?? false,
     hasAdfDetectPaperLoaded: scanCaps?.hasAdfDetectPaperLoaded ?? false,
     isEscl: scanCaps?.isEscl ?? false,
+    getScanStatus,
+    createScanJobSettings,
+    submitScanJob,
+  };
+}
+
+async function buildEsclOnlyCapabilities(): Promise<DeviceCapabilities> {
+  // Probe eSCL capabilities directly without a discovery tree
+  let eSclScanCaps: EsclScanCaps | null = null;
+  try {
+    eSclScanCaps = await HPApi.getEsclScanCaps("/eSCL/ScannerCapabilities");
+    console.log("eSCL capabilities loaded from /eSCL/ScannerCapabilities");
+  } catch (e) {
+    console.log(
+      "WARNING: Could not load eSCL scan capabilities, device may not be fully supported",
+    );
+  }
+
+  const getScanStatus = async (): Promise<IScanStatus> =>
+    HPApi.getEsclScanStatus();
+
+  const createScanJobSettings = (
+    inputSource: InputSource,
+    contentType: "Document" | "Photo",
+    resolution: number,
+    mode: ScanMode,
+    width: number | null,
+    height: number | null,
+    isDuplex: boolean,
+  ): IScanJobSettings =>
+    new EsclScanJobSettings(
+      inputSource,
+      contentType,
+      resolution,
+      mode,
+      width,
+      height,
+      isDuplex,
+    );
+
+  const submitScanJob = async (
+    scanJobSettings: IScanJobSettings,
+  ): Promise<string> => HPApi.postEsclJob(scanJobSettings);
+
+  return {
+    supportsMultiItemScanFromPlaten: false,
+    useWalkupScanToComp: false,
+    platenMaxWidth: eSclScanCaps?.platenMaxWidth ?? null,
+    platenMaxHeight: eSclScanCaps?.platenMaxHeight ?? null,
+    adfMaxWidth: eSclScanCaps?.adfMaxWidth ?? null,
+    adfMaxHeight: eSclScanCaps?.adfMaxHeight ?? null,
+    adfDuplexMaxWidth: eSclScanCaps?.adfDuplexMaxWidth ?? null,
+    adfDuplexMaxHeight: eSclScanCaps?.adfDuplexMaxHeight ?? null,
+    hasAdfDuplex: eSclScanCaps?.hasAdfDuplex ?? false,
+    hasAdfDetectPaperLoaded: eSclScanCaps?.hasAdfDetectPaperLoaded ?? false,
+    isEscl: true,
     getScanStatus,
     createScanJobSettings,
     submitScanJob,

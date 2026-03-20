@@ -33,7 +33,7 @@ import EsclScanStatus from "./hpModels/EsclScanStatus.js";
 import type { IScanJobSettings } from "./hpModels/IScanJobSettings.js";
 import EsclScanImageInfo from "./hpModels/EsclScanImageInfo.js";
 import PathHelper from "./PathHelper.js";
-import https from "https";
+import https from "node:https";
 
 let printerIP = "192.168.1.11";
 let debug = false;
@@ -43,13 +43,25 @@ let callCount = 0;
 let allowInsecureHttps = false;
 let useHttps = false;
 
-// add these static methods alongside the existing setters
-static setAllowInsecureHttps(allow: boolean): void {
-  allowInsecureHttps = allow;
+static setAllowInsecureHttps(v: boolean): void { allowInsecureHttps = v; }
+
+static setUseHttps(v: boolean): void { useHttps = v; }
+
+private static axiosBaseConfig(): Partial<AxiosRequestConfig> {
+  return allowInsecureHttps
+    ? { httpsAgent: new (await import("node:https")).Agent({ rejectUnauthorized: false }) }
+    : {};
 }
 
-static setUseHttps(https: boolean): void {
-  useHttps = https;
+private static extraConfig(): Partial<AxiosRequestConfig> {
+  return allowInsecureHttps
+    ? { httpsAgent: new https.Agent({ rejectUnauthorized: false }) }
+    : {};
+}
+
+private static printerBaseUrl(port?: number): string {
+  const scheme = useHttps ? "https" : "http";
+  return port ? `${scheme}://${printerIP}:${port}` : `${scheme}://${printerIP}`;
 }
 
 private static scheme(): string {
@@ -155,7 +167,7 @@ export default class HPApi {
     }
   }
 
-  static async getDiscoveryTree(): Promise<DiscoveryTree> {
+  static async getDiscoveryTree(): Promise<DiscoveryTree | null> {
     const response = await HPApi.callAxios({
       baseURL: `${HPApi.scheme()}://${printerIP}`,
       ...(HPApi.httpsAgent() && { httpsAgent: HPApi.httpsAgent() }),
@@ -164,7 +176,9 @@ export default class HPApi {
       responseType: "text",
     });
 
-    if (response.status !== 200) {
+    if (response.status === 404) {
+      return null;  // eSCL-only printer, no legacy tree
+    } else if (response.status !== 200) {
       throw new Error(response.statusText);
     } else {
       return DiscoveryTree.createDiscoveryTree(response.data);
