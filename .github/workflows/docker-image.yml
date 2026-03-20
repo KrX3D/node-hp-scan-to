@@ -99,7 +99,8 @@ jobs:
           node-version: '20.18.1'
           registry-url: 'https://registry.npmjs.org/'
       - name: Install dependencies
-        run: yarn install --frozen-lockfile
+        #run: yarn install --frozen-lockfile
+        run: yarn install
       - name: Test
         run: yarn test
       - name: Build
