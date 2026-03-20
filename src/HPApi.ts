@@ -150,19 +150,14 @@ export default class HPApi {
   }
 
   static async getDiscoveryTree(): Promise<DiscoveryTree | null> {
-    let response: AxiosResponse<string>;
-    try {
-      response = await HPApi.callAxios({
-        baseURL: `${HPApi.scheme()}://${printerIP}`,
-        ...(HPApi.httpsAgent() && { httpsAgent: HPApi.httpsAgent() }),
-        url: "/DevMgmt/DiscoveryTree.xml",
-        method: "GET",
-        responseType: "text",
-        validateStatus: (status) => status === 200 || status === 404,
-      });
-    } catch (error) {
-      throw error;
-    }
+    const response = await HPApi.callAxios({
+      baseURL: `${HPApi.scheme()}://${printerIP}`,
+      ...(HPApi.httpsAgent() && { httpsAgent: HPApi.httpsAgent() }),
+      url: "/DevMgmt/DiscoveryTree.xml",
+      method: "GET",
+      responseType: "text",
+      validateStatus: (status) => status === 200 || status === 404,
+    });
 
     if (response.status === 404) {
       return null;
