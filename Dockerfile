@@ -14,7 +14,8 @@ FROM --platform=$BUILDPLATFORM node:22-alpine AS deps
 WORKDIR /app
 COPY package.json yarn.lock .yarnrc.yml ./
 RUN corepack enable \
-    && yarn install --immutable \
+    #&& yarn install --immutable \
+    && yarn install --no-immutable \
     && yarn workspaces focus --production --all
 
 FROM node:22-alpine AS app
