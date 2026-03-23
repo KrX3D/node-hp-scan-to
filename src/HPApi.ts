@@ -34,6 +34,7 @@ import type { IScanJobSettings } from "./hpModels/IScanJobSettings.js";
 import EsclScanImageInfo from "./hpModels/EsclScanImageInfo.js";
 import PathHelper from "./PathHelper.js";
 import https from "node:https";
+import http from "node:http";
 
 let printerIP = "192.168.1.11";
 let debug = false;
@@ -47,14 +48,21 @@ export default class HPApi {
   static setAllowInsecureHttps(v: boolean): void { allowInsecureHttps = v; }
   static setUseHttps(v: boolean): void { useHttps = v; }
 
+  const httpAgent = new http.Agent({ keepAlive: false });
+  const httpsAgentNoKeepAlive = new https.Agent({ keepAlive: false, rejectUnauthorized: false });
+
   private static scheme(): string {
     return useHttps ? "https" : "http";
   }
 
   private static httpsAgent(): https.Agent | undefined {
     return allowInsecureHttps
-      ? new https.Agent({ rejectUnauthorized: false })
+      ? new https.Agent({ rejectUnauthorized: false, keepAlive: false })
       : undefined;
+  }
+
+  private static httpAgentConfig(): object {
+    return useHttps ? {} : { httpAgent };
   }
 
   static setDeviceIP(ip: string): void {

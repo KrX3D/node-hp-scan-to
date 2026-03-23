@@ -281,6 +281,12 @@ async function eSCLScanJobHandling(
     const scanImageInfo = await HPApi.getEsclScanImageInfo(jobLocation);
     console.log("scanImageInfo:", scanImageInfo.jobURI);
 
+    const returnedJobPath = PathHelper.getPathFromHttpLocation(scanImageInfo.jobURI);
+    if (returnedJobPath !== jobLocation && returnedJobPath + "/" !== jobLocation) {
+      console.log(`ScanImageInfo returned different job URI (${scanImageInfo.jobURI}), scan complete`);
+      break;
+    }
+
     const actualHeight = scanImageInfo.actualHeight;
 
     const adfHeight = await getAndFixHeightWHenAdf(
