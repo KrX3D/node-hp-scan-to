@@ -282,7 +282,11 @@ async function eSCLScanJobHandling(
     console.log("scanImageInfo:", scanImageInfo.jobURI);
 
     const returnedJobPath = PathHelper.getPathFromHttpLocation(scanImageInfo.jobURI);
-    if (returnedJobPath !== jobLocation && returnedJobPath + "/" !== jobLocation) {
+    if (
+      scanJobContent.elements.length > 0 &&  // only check after first page
+      returnedJobPath !== jobLocation &&
+      returnedJobPath + "/" !== jobLocation
+    ) {
       console.log(`ScanImageInfo returned different job URI (${scanImageInfo.jobURI}), scan complete`);
       try {
         await fs.unlink(filePath);
