@@ -284,14 +284,12 @@ async function eSCLScanJobHandling(
     const returnedJobPath = PathHelper.getPathFromHttpLocation(scanImageInfo.jobURI);
     if (returnedJobPath !== jobLocation && returnedJobPath + "/" !== jobLocation) {
       console.log(`ScanImageInfo returned different job URI (${scanImageInfo.jobURI}), scan complete`);
-      // Clean up the orphaned downloaded file
       try {
         await fs.unlink(filePath);
       } catch {
         // ignore cleanup errors
       }
       break;
-    } break;
     }
 
     const actualHeight = scanImageInfo.actualHeight;

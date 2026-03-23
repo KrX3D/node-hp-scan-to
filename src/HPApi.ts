@@ -655,6 +655,7 @@ export default class HPApi {
     const { data }: AxiosResponse<Stream> = await axios.request<Stream>({
       baseURL: `${HPApi.scheme()}://${printerIP}`,
       ...(HPApi.httpsAgent() && { httpsAgent: HPApi.httpsAgent() }),
+      ...HPApi.httpAgentConfig(),
       url: binaryURL,
       method: "GET",
       responseType: "stream",
