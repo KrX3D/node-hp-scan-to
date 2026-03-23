@@ -210,16 +210,12 @@ function mapToJobState(jobStateReason: JobStateReason) {
   if (jobStateReason === JobStateReason.JobCanceledByUser) {
     return JobState.Canceled;
   }
-
   if (jobStateReason === JobStateReason.JobCompletedSuccessfully) {
     return JobState.Completed;
   }
-
-  console.log(
-    `Unknown job state reason: ${jobStateReason}, job will be cancelled`,
-  );
-
-  return JobState.Canceled;
+  // JobScanning means the loop exited unexpectedly but scan worked
+  console.log(`Unexpected job state reason at completion: ${jobStateReason}, treating as completed`);
+  return JobState.Completed;
 }
 
 async function getAndFixHeightWHenAdf(
@@ -264,6 +260,26 @@ async function eSCLScanJobHandling(
     await delay(1000);
 
     const pageNumber = getPageNumber(pageCountingStrategy, scanJobContent);
+    const jobLocation = PathHelper.getPathFromHttpLocation(jobUrl);
+
+    // Wait until ScanImageInfo confirms this job is active
+    let scanImageInfo: EsclScanImageInfo;
+    let pollRetries = 0;
+
+    while (true) {
+      scanImageInfo = await HPApi.getEsclScanImageInfo(jobLocation);
+      const returnedJobPath = PathHelper.getPathFromHttpLocation(scanImageInfo.jobURI);
+      if (returnedJobPath === jobLocation || returnedJobPath + "/" === jobLocation) {
+        break; // printer is ready for this job
+      }
+      pollRetries++;
+      if (pollRetries > 30) {
+        console.log("ScanImageInfo never matched current job URI after 30 retries, aborting");
+        return JobState.Canceled;
+      }
+      console.log(`Waiting for printer to switch to job ${jobLocation} (currently reporting ${scanImageInfo.jobURI}), retry ${pollRetries}`);
+      await delay(500);
+    }
 
     const destinationFilePath = await PathHelper.getFileForPage(
       folder,
@@ -274,27 +290,9 @@ async function eSCLScanJobHandling(
       new Date(),
     );
 
-    const jobLocation = PathHelper.getPathFromHttpLocation(jobUrl);
-
     const filePath = await HPApi.downloadEsclPage(jobUrl, destinationFilePath);
 
-    const scanImageInfo = await HPApi.getEsclScanImageInfo(jobLocation);
     console.log("scanImageInfo:", scanImageInfo.jobURI);
-
-    const returnedJobPath = PathHelper.getPathFromHttpLocation(scanImageInfo.jobURI);
-    if (
-      scanJobContent.elements.length > 0 &&  // only check after first page
-      returnedJobPath !== jobLocation &&
-      returnedJobPath + "/" !== jobLocation
-    ) {
-      console.log(`ScanImageInfo returned different job URI (${scanImageInfo.jobURI}), scan complete`);
-      try {
-        await fs.unlink(filePath);
-      } catch {
-        // ignore cleanup errors
-      }
-      break;
-    }
 
     const actualHeight = scanImageInfo.actualHeight;
 
@@ -333,6 +331,12 @@ async function eSCLScanJobHandling(
   );
 
   if (jobStateReason === null) {
+    if (scanJobContent.elements.length > 0) {
+      console.log(
+        "Job state reason is null but pages were scanned, treating as completed",
+      );
+      return JobState.Completed;
+    }
     console.log(
       "Job state reason is null, it means that the current " +
         "job was not found in the device's status, this is probably a bug " +
