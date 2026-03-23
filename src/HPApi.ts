@@ -44,12 +44,12 @@ let callCount = 0;
 let allowInsecureHttps = false;
 let useHttps = false;
 
+// Module-level agents — no keep-alive to avoid ECONNRESET on idle connections
+const httpAgent = new http.Agent({ keepAlive: false });
+
 export default class HPApi {
   static setAllowInsecureHttps(v: boolean): void { allowInsecureHttps = v; }
   static setUseHttps(v: boolean): void { useHttps = v; }
-
-  const httpAgent = new http.Agent({ keepAlive: false });
-  const httpsAgentNoKeepAlive = new https.Agent({ keepAlive: false, rejectUnauthorized: false });
 
   private static scheme(): string {
     return useHttps ? "https" : "http";
@@ -161,6 +161,7 @@ export default class HPApi {
     const response = await HPApi.callAxios({
       baseURL: `${HPApi.scheme()}://${printerIP}`,
       ...(HPApi.httpsAgent() && { httpsAgent: HPApi.httpsAgent() }),
+      ...HPApi.httpAgentConfig(),
       url: "/DevMgmt/DiscoveryTree.xml",
       method: "GET",
       responseType: "text",
@@ -179,6 +180,7 @@ export default class HPApi {
     const response = await HPApi.callAxios({
       baseURL: `${HPApi.scheme()}://${printerIP}`,
       ...(HPApi.httpsAgent() && { httpsAgent: HPApi.httpsAgent() }),
+      ...HPApi.httpAgentConfig(),
       url: uri,
       method: "GET",
       responseType: "text",
@@ -195,6 +197,7 @@ export default class HPApi {
     const response = await HPApi.callAxios({
       baseURL: `${HPApi.scheme()}://${printerIP}`,
       ...(HPApi.httpsAgent() && { httpsAgent: HPApi.httpsAgent() }),
+      ...HPApi.httpAgentConfig(),
       url: "/WalkupScanToComp/WalkupScanToCompDestinations",
       method: "GET",
       responseType: "text",
@@ -213,6 +216,7 @@ export default class HPApi {
     const response = await HPApi.callAxios({
       baseURL: `${HPApi.scheme()}://${printerIP}`,
       ...(HPApi.httpsAgent() && { httpsAgent: HPApi.httpsAgent() }),
+      ...HPApi.httpAgentConfig(),
       url: uri,
       method: "GET",
       responseType: "text",
@@ -230,6 +234,7 @@ export default class HPApi {
     const response = await HPApi.callAxios({
       baseURL: `${HPApi.scheme()}://${printerIP}`,
       ...(HPApi.httpsAgent() && { httpsAgent: HPApi.httpsAgent() }),
+      ...HPApi.httpAgentConfig(),
       url: uri,
       method: "GET",
       responseType: "text",
@@ -248,6 +253,7 @@ export default class HPApi {
     const response = await HPApi.callAxios({
       baseURL: `${HPApi.scheme()}://${printerIP}`,
       ...(HPApi.httpsAgent() && { httpsAgent: HPApi.httpsAgent() }),
+      ...HPApi.httpAgentConfig(),
       url: uri,
       method: "GET",
       responseType: "text",
@@ -266,6 +272,7 @@ export default class HPApi {
     const response = await HPApi.callAxios({
       baseURL: `${HPApi.scheme()}://${printerIP}`,
       ...(HPApi.httpsAgent() && { httpsAgent: HPApi.httpsAgent() }),
+      ...HPApi.httpAgentConfig(),
       url: uri,
       method: "GET",
       responseType: "text",
@@ -282,6 +289,7 @@ export default class HPApi {
     const response = await HPApi.callAxios({
       baseURL: `${HPApi.scheme()}://${printerIP}`,
       ...(HPApi.httpsAgent() && { httpsAgent: HPApi.httpsAgent() }),
+      ...HPApi.httpAgentConfig(),
       url: uri,
       method: "GET",
       responseType: "text",
@@ -298,6 +306,7 @@ export default class HPApi {
     const response = await HPApi.callAxios({
       baseURL: `${HPApi.scheme()}://${printerIP}`,
       ...(HPApi.httpsAgent() && { httpsAgent: HPApi.httpsAgent() }),
+      ...HPApi.httpAgentConfig(),
       url: uri,
       method: "GET",
       responseType: "text",
@@ -316,6 +325,7 @@ export default class HPApi {
     const response = await HPApi.callAxios({
       baseURL: `${HPApi.scheme()}://${printerIP}`,
       ...(HPApi.httpsAgent() && { httpsAgent: HPApi.httpsAgent() }),
+      ...HPApi.httpAgentConfig(),
       url: uri,
       method: "GET",
       responseType: "text",
@@ -334,6 +344,7 @@ export default class HPApi {
     const response = await HPApi.callAxios({
       baseURL: `${HPApi.scheme()}://${printerIP}`,
       ...(HPApi.httpsAgent() && { httpsAgent: HPApi.httpsAgent() }),
+      ...HPApi.httpAgentConfig(),
       url: compEventURI,
       method: "GET",
       responseType: "text",
@@ -358,6 +369,7 @@ export default class HPApi {
     const response = await HPApi.callAxios({
       baseURL: `${HPApi.scheme()}://${printerIP}`,
       ...(HPApi.httpsAgent() && { httpsAgent: HPApi.httpsAgent() }),
+      ...HPApi.httpAgentConfig(),
       url: path,
       method: "DELETE",
       responseType: "text",
@@ -379,6 +391,7 @@ export default class HPApi {
     const response = await HPApi.callAxios({
       baseURL: `${HPApi.scheme()}://${printerIP}`,
       ...(HPApi.httpsAgent() && { httpsAgent: HPApi.httpsAgent() }),
+      ...HPApi.httpAgentConfig(),
       url: url,
       method: "POST",
       headers: { "Content-Type": "text/xml" },
@@ -405,6 +418,7 @@ export default class HPApi {
     const response = await HPApi.callAxios({
       baseURL: `${HPApi.scheme()}://${printerIP}`,
       ...(HPApi.httpsAgent() && { httpsAgent: HPApi.httpsAgent() }),
+      ...HPApi.httpAgentConfig(),
       url: url,
       method: "POST",
       headers: { "Content-Type": "text/xml" },
@@ -437,6 +451,7 @@ export default class HPApi {
       response = await HPApi.callAxios({
         baseURL: `${HPApi.scheme()}://${printerIP}`,
         ...(HPApi.httpsAgent() && { httpsAgent: HPApi.httpsAgent() }),
+        ...HPApi.httpAgentConfig(),
         url: url,
         method: "GET",
         responseType: "text",
@@ -492,6 +507,7 @@ export default class HPApi {
     const response = await HPApi.callAxios({
       baseURL: `${HPApi.scheme()}://${printerIP}`,
       ...(HPApi.httpsAgent() && { httpsAgent: HPApi.httpsAgent() }),
+      ...HPApi.httpAgentConfig(),
       url: destinationURL,
       method: "GET",
       responseType: "text",
@@ -517,6 +533,7 @@ export default class HPApi {
     const response = await HPApi.callAxios({
       baseURL: `${HPApi.scheme()}://${printerIP}`,
       ...(HPApi.httpsAgent() && { httpsAgent: HPApi.httpsAgent() }),
+      ...HPApi.httpAgentConfig(),
       url: "/Scan/Status",
       method: "GET",
       responseType: "text",
@@ -536,6 +553,7 @@ export default class HPApi {
     const response = await HPApi.callAxios({
       baseURL: `${HPApi.scheme()}://${printerIP}`,
       ...(HPApi.httpsAgent() && { httpsAgent: HPApi.httpsAgent() }),
+      ...HPApi.httpAgentConfig(),
       url: "/eSCL/ScannerStatus",
       method: "GET",
       responseType: "text",
@@ -563,6 +581,7 @@ export default class HPApi {
     const response = await HPApi.callAxios({
       baseURL: `${HPApi.scheme()}://${printerIP}`,
       ...(HPApi.httpsAgent() && { httpsAgent: HPApi.httpsAgent() }),
+      ...HPApi.httpAgentConfig(),
       url: "/Scan/Jobs",
       method: "POST",
       headers: { "Content-Type": "text/xml" },
@@ -588,6 +607,7 @@ export default class HPApi {
     const response = await HPApi.callAxios({
       baseURL: `${HPApi.scheme()}://${printerIP}`,
       ...(HPApi.httpsAgent() && { httpsAgent: HPApi.httpsAgent() }),
+      ...HPApi.httpAgentConfig(),
       url: "/eSCL/ScanJobs",
       method: "POST",
       headers: { "Content-Type": "text/xml" },
@@ -684,6 +704,7 @@ export default class HPApi {
       const response = await HPApi.callAxios({
         baseURL: `${HPApi.scheme()}://${printerIP}`,
         ...(HPApi.httpsAgent() && { httpsAgent: HPApi.httpsAgent() }),
+        ...HPApi.httpAgentConfig(),
         url: jobUri + "/ScanImageInfo",
         method: "GET",
         responseType: "text",
